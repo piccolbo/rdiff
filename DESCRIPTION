@@ -1,0 +1,9 @@
+Package: rdiff
+Type: Package
+Title: compare R source, find differences
+Version: 0.0.0
+Date: 2014-09-06
+Author: Antonio Piccolboni
+Maintainer: Antonio Piccolboni <antonio@piccolboni.info>
+Description: A syntax and slightly semantic aware diff tool for R
+License: Apache 2.0 https://www.apache.org/licenses/LICENSE-2.0.html

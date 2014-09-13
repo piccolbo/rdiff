@@ -1,0 +1,15 @@
+export(rdiff)
+export(normalize)
+
+S3method(rdiff, expression)
+S3method(rdiff, call)
+S3method(rdiff, pairlist)
+S3method(rdiff, numeric)
+S3method(rdiff, name)
+S3method(rdiff, symbol)
+S3method(rdiff, srcref)
+S3method(rdiff, default)
+
+S3method(normalize, expression)
+S3method(normalize, default)
+
