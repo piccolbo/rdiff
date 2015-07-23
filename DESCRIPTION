@@ -7,3 +7,4 @@ Author: Antonio Piccolboni
 Maintainer: Antonio Piccolboni <antonio@piccolboni.info>
 Description: A syntax and slightly semantic aware diff tool for R
 License: Apache 2.0 https://www.apache.org/licenses/LICENSE-2.0.html
+Imports: memoise

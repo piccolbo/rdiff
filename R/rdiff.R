@@ -6,12 +6,18 @@ strip.nulls =
     x[!sapply(x, is.null)]
 
 diff.size =
-  function(x) {
-    if(is.null(x))
-      0
-    else {
-      if(is.leaf(x)) 1
-      else diff.size(rhead(x)) + sum(unlist(sapply(rtail(x), diff.size)))}}
+  function(x, y = NULL) {
+    if(is.null(y)) {
+      if(is.null(x))
+        0
+      else {
+        if(is.leaf(x)) 1
+        else {
+          diff.size(rhead(x)) +
+            sum(unlist(sapply(rtail(x), diff.size)))}}}
+    else{
+      (diff.size(x) + diff.size(y))*
+        if(class(x) == class(y))  .5 else 1 }}
 
 order = function(x, ...) UseMethod("order")
 
@@ -44,7 +50,7 @@ Diff =
         right = I(list(right)),
         dist = {
           if(is.null(dist))
-            diff.size(left) + diff.size(right)
+            diff.size(left, right)
           else dist}),
       class = c("Diff", "data.frame"))
 
@@ -56,7 +62,7 @@ Diff =
 rdist = function(D) sum(D$dist)
 
 min = function(..., na.rm = FALSE) UseMethod("min")
-min.defaul = base::min
+min.default = base::min
 min.Diff =
   function(..., na.rm = FALSE)
     list(...)[[which.min(sapply(list(...), function(x) rdist(x)))]]
@@ -95,7 +101,22 @@ rdiff =
                         Diff(NULL, rhead(y)) + rdiff(x, rtail(y)),
                         rdiff(x, rhead(y)) + Diff(NULL, rtail(y)))
                     else NULL)))}}}
-      str(z)
+      Lstr(z)
       z})
 
 
+reformat =
+  function(x, indent = 0) {
+    if(is.srcref(x) || is.null(x)) ""
+    else {
+      if(is.leaf(x))
+        paste(
+          paste0(rep(" ", 2 * indent), collapse = ""),
+          paste0(as.character(x), collapse = "",
+                 collapse = ""))
+      else {
+        paste(
+          c(
+            paste(reformat(rhead(x), indent), "("),
+            sapply(rtail(x), reformat, indent = indent + 1)),
+          collapse = "\n")}}}
