@@ -4,3 +4,4 @@ S3method(normalize, expression)
 S3method(normalize, default)
 
 importFrom(memoise, memoise)
+import(purrr)

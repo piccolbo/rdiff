@@ -2,8 +2,11 @@
 # diff for R code
 
 strip.nulls =
-  function(x)
-    x[!sapply(x, is.null)]
+  function(x) {
+    x = x[!sapply(x, is.null)]
+    if(length(x) == 0) NULL
+    else
+      x}
 
 diff.size =
   function(x, y = NULL) {
@@ -13,8 +16,8 @@ diff.size =
       else {
         if(is.leaf(x)) 1
         else {
-          diff.size(rhead(x)) +
-            sum(unlist(sapply(rtail(x), diff.size)))}}}
+          diff.size(x[[1]]) +
+            sum(unlist(sapply(x[-1], diff.size)))}}}
     else{
       (diff.size(x) + diff.size(y))*
         if(class(x) == class(y))  .5 else 1 }}
@@ -40,69 +43,97 @@ normalize.default = identity
 
 is.leaf =
   function(x)
-    is.atomic(x) || is.symbol(x) || is.name(x) || length(x) == 0
+    is.null(x) || is.atomic(x) || is.symbol(x) || is.name(x) || length(x) == 0
+
+is.operator =
+  function(x)
+    x %in% c("+", "-", "*", "^", "%%", "%/%", "/",
+             "==", ">", "<", "!=", "<=", ">=",
+             "&", "|")
+
+wrap  =
+  function(x) {
+    if(is.null(x)) x
+    else {
+    x = deparse(x)
+    ux =
+        paste0(
+          strsplit(x, "")[[1]],
+          intToUtf8(c(0x0333)),
+          collapse = "")
+    as.name(
+      if(is.operator(x)) paste0("%", ux, "%")
+      else (ux))}}
+
 
 Diff =
-  function(left, right, dist = NULL)
-    structure(
-      data.frame(
-        left = I(list(left)),
-        right = I(list(right)),
-        dist = {
-          if(is.null(dist))
-            diff.size(left, right)
-          else dist}),
-      class = c("Diff", "data.frame"))
+  function(left, right, dist = NULL){
+    is.diff = !identical(left, right)
+    list(
+      left  = if(is.diff) wrap(left) else left,
+      right = if(is.diff) wrap(right) else right,
+      report =
+        if(is.diff)
+          data.frame(
+            left  = I(list(left)),
+            right = I(list(right)),
+            dist = {
+              if(is.null(dist))
+                diff.size(left, right)
+              else dist}))}
+
+rebuild =
+  function(x) {
+    x = strip.nulls(x)
+    switch(
+      length(x) + 1,
+      NULL,
+      x[[1]],
+      as.call(x),
+      as.call(x))}
+
+cd =
+  combine.diffs =
+  function(...) {
+    ds = list(...)
+    left  = rebuild(map(ds, "left"))
+    right = rebuild(map(ds, "right"))
+    list(
+      left   = left,
+      right  = right,
+      report = do.call(rbind, map(ds, "report")))}
+
+rdist = function(D) sum(D$report$dist)
 
 
-`+.Diff` =
-  function(d1, d2)
-    rbind(d1, d2)
-
-rdist = function(D) sum(D$dist)
-
-min = function(..., na.rm = FALSE) UseMethod("min")
-min.default = base::min
-min.Diff =
+mindiff =
   function(..., na.rm = FALSE)
     list(...)[[which.min(sapply(list(...), function(x) rdist(x)))]]
 
 is.srcref = function(x) class(x) == "srcref"
 
-rhead = function(x) x[[1]]
-rtail = function(x) as.list(x[-1])
+op = function(x) el(x, 1)
+l = function(x) el(x, 2)
+r = function(x) el(x, 3)
+el = function(x, i) if(i <= length(x)) x[[i]]
+
 rdiff =
   memoise(
     function(x, y) {
-      if(is.srcref(x) && is.srcref(y))
-        NULL
+      str(x)
+      str(y)
+      if((is.null(x) || is.null(y)) ||
+         (identical(x,y)) ||
+         (is.leaf(x) && is.leaf(y))) Diff(x, y)
       else {
-        z = {
-          if(identical(x,y)) NULL
-          else {
-            if(is.leaf(x) && is.leaf(y))
-              Diff(x, y)
-            else
-              do.call(
-                min,
-                strip.nulls(
-                  c(
-                    if(!is.leaf(x) && !is.leaf(y))
-                      list(
-                        rdiff(rhead(x), rhead(y)) + rdiff(rtail(x), rtail(y)))
-                    else NULL,
-                    if(!is.leaf(x))
-                      list(
-                        Diff(rhead(x), NULL) + rdiff(rtail(x), y),
-                        rdiff(rhead(x), y) + Diff(rtail(x), NULL))
-                    else NULL,
-                    if(!is.leaf(y))
-                      list(
-                        Diff(NULL, rhead(y)) + rdiff(x, rtail(y)),
-                        rdiff(x, rhead(y)) + Diff(NULL, rtail(y)))
-                    else NULL)))}}}
-      Lstr(z)
-      z})
+        if(is.srcref(x) && is.srcref(y)) NULL
+        else {
+          mindiff(
+            cd(rdiff(op(x), op(y)) , rdiff(l(x), l(y)) , rdiff(r(x), r(y))),
+            cd(rdiff(op(x), NULL)  , rdiff(l(x),   y)  , rdiff(r(x), NULL)),
+            cd(rdiff(op(x), NULL)  , rdiff(l(x), NULL) , rdiff(r(x), y)),
+            cd(rdiff(NULL,  op(y)) , rdiff(  x,  l(y)) , rdiff(NULL, r(y))),
+            cd(rdiff(NULL,  op(y)) , rdiff(NULL, l(y)) , rdiff(  x,  r(y))))}}})
 
 
 reformat =
