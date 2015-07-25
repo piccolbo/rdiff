@@ -59,7 +59,7 @@ wrap  =
     ux =
         paste0(
           strsplit(x, "")[[1]],
-          intToUtf8(c(0x0333)),
+          intToUtf8(c(0x0332)),
           collapse = "")
     as.name(
       if(is.operator(x)) paste0("%", ux, "%")
