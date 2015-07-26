@@ -30,22 +30,24 @@ mindiff =
     xx[[which.min(map(xx, diffdist))]]}
 
 rdiff =
-  function(x, y) {
-    str(x)
-    str(y)
-    cat("---\n")
-    if(is.simple(x) && is.simple(y)) Diff(x, y)
-    else {
-      mindiff(
-        c(
-          if(!is.simple(x))
-            list(
-              rbind(rdiff(headl(x), y), Diff(taill(x), NULL)),
-              rbind(Diff(headl(x), NULL), rdiff(taill(x), y))),
-          if(!is.simple(y))
-            list(
-              rbind(rdiff(x, headl(y)), Diff(NULL, taill(y))),
-              rbind(Diff(NULL, headl(y)), rdiff(x, taill(y)))),
-          if(!(is.simple(x) || is.simple(y)))
-            list(
-              rbind(rdiff(headl(x), headl(y)), rdiff(taill(x), taill(y))))))}}
+  memoise(
+    function(x, y, verbose = FALSE) {
+      if(verbose){
+        str(x)
+        str(y)
+        cat("---\n")}
+      if(is.simple(x) && is.simple(y)) Diff(x, y)
+      else {
+        mindiff(
+          c(
+            if(!is.simple(x))
+              list(
+                rbind(rdiff(headl(x), y), Diff(taill(x), NULL)),
+                rbind(Diff(headl(x), NULL), rdiff(taill(x), y))),
+            if(!is.simple(y))
+              list(
+                rbind(rdiff(x, headl(y)), Diff(NULL, taill(y))),
+                rbind(Diff(NULL, headl(y)), rdiff(x, taill(y)))),
+            if(!(is.simple(x) || is.simple(y)))
+              list(
+                rbind(rdiff(headl(x), headl(y)), rdiff(taill(x), taill(y))))))}})
