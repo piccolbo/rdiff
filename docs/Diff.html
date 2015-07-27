@@ -1,0 +1,30 @@
+<div id="optimal-diffs-for-r-in-r" class="section level1">
+<h1>Optimal diffs for R in R</h1>
+<p>Like many developers, I use git to manage my source code and collaborate with others. One fundamental component of source code control is a tool to compare code. Most tools I am aware of are language-independent, which means the comparison algorithm has no knowledge of the syntax or semantics of the language. There are some exceptions in proprietary software, but I’ve never met anyone using them. On the one hand, this is good because they work with any language, be it computer or natural. On the other, it’s bad because they identify set of differences that are bigger than one would naturally want. What “natural” means need to be detailed a little better, but here is one example that occurs in practice and about which most people will agree</p>
+<pre class="r"><code>x = x + 1
+x = x^2
+y = x - 1</code></pre>
+<pre class="r"><code>if(!is.null(x)) {
+  x = x + 1
+  x = x^2
+  y = x - 1
+}</code></pre>
+<pre class="r"><code>1,3c1,5
+&lt; x = x + 1
+&lt; x = x^2
+&lt; y = x - 1
+---
+&gt; if(!is.null(x)) {
+&gt;   x = x + 1
+&gt;   x = x^2
+&gt;   y = x - 1
+&gt; }</code></pre>
+<p>In this experiment, I imagined this scenario. I first wrote the first snippet. Then I realized that it needed to be wrapped in an <code>if</code> statement. I then added the <code>if</code> statement and the brackets, and re-indentended the code. Comparing the two versions with a syntax-oblivious diff tool, I get a very large diff, in fact encompassing every single line of code. There are ways of telling unix diff to be a bit more flexible with white space, but they either do too little or too much.</p>
+<p>Instead, we are going to develop a function <code>rdiff</code> in a new package by the same name that compares two R sources</p>
+<pre class="r"><code>library(rdiff)
+rdiff(&quot;snippet1.R&quot;, &quot;snippet2.R&quot;)</code></pre>
+<pre><code>#   x            y d
+# 1             if 1
+# 2   ! is.null(x) 3
+# 3              { 1</code></pre>
+</div>
