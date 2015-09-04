@@ -16,7 +16,7 @@ Diff =
       data.frame(
         x = paste(as.character(x), collapse = " "),
         y = paste(as.character(y), collapse = " "),
-        d = max(flatlen(x), flatlen(y)))}
+        d = flatlen(x) + flatlen(y) - (class(x) == class(y)))}
 
 swapcol = function(diff) data.frame(x = diff$y, y = diff$x,  d = diff$d)
 
