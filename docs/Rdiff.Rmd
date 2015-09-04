@@ -1,5 +1,7 @@
 ---
- output: html_fragment
+ output: 
+   html_fragment:
+     keep_md: true
 ---
 ```{r echo = FALSE}
 library(knitr)
