@@ -1,0 +1,26 @@
+1c1
+< function (lhs, rhs) 
+---
+> function (leftHandSide, rightHandSide) 
+7,9c7,9
+<     rhss <- chain_parts[["rhss"]]
+<     lhs <- chain_parts[["lhs"]]
+<     env[["_function_list"]] <- lapply(1:length(rhss), function(i) wrap_function(rhss[[i]], 
+---
+>     rightHandSides <- chain_parts[["rightHandSides"]]
+>     leftHandSide <- chain_parts[["leftHandSide"]]
+>     env[["_function_list"]] <- lapply(1:length(rightHandSides), function(i) wrap_function(rightHandSides[[i]],
+14c14
+<     if (is_placeholder(lhs)) {
+---
+>     if (is_placeholder(leftHandSide)) {
+18,19c18,19
+<         env[["_lhs"]] <- eval(lhs, parent, parent)
+<         result <- withVisible(eval(quote(`_fseq`(`_lhs`)), env, 
+---
+>         env[["_leftHandSide"]] <- eval(leftHandSide, parent, parent)
+>         result <- withVisible(eval(quote(`_fseq`(`_leftHandSide`)), env,
+22c22
+<             eval(call("<-", lhs, result[["value"]]), parent, 
+---
+>             eval(call("<-", leftHandSide, result[["value"]]), parent,
