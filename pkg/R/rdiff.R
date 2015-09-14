@@ -13,12 +13,16 @@ complexity =
       else {1 + sum(sapply(as.list(x), complexity))}})
 
 
+as_char =
+  function(x)
+    capture.output(str(x))
+
 Diff =
   function(x, y){
     if(!identical(x, y))
       data.frame(
-        x = paste(as.character(x), collapse = " "),
-        y = paste(as.character(y), collapse = " "),
+        x = paste(as_char(x), collapse = " "),
+        y = paste(as_char(y), collapse = " "),
         d = complexity(x) + complexity(y) - (class(x) == class(y)))}
 
 swapcol = function(diff) data.frame(x = diff$y, y = diff$x,  d = diff$d)
