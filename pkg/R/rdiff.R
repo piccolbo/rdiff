@@ -4,11 +4,14 @@ is.simple =
       is.atomic(x) ||
       length(x) == 0 }
 
-flatten = function(x) {if(is.simple(x)) x else {x = as.list(x); unlist(map(x, flatten))}}
+complexity =
+  memoise(
+    function(x) {
+      if(is.null(x)) 0
+      else
+        if(is.simple(x)) 1
+      else {1 + sum(sapply(as.list(x), complexity))}})
 
-flatlen = function(x) {
-  x = flatten(x)
-  length(x) + length(names(x))}
 
 Diff =
   function(x, y){
@@ -16,7 +19,7 @@ Diff =
       data.frame(
         x = paste(as.character(x), collapse = " "),
         y = paste(as.character(y), collapse = " "),
-        d = flatlen(x) + flatlen(y) - (class(x) == class(y)))}
+        d = complexity(x) + complexity(y) - (class(x) == class(y)))}
 
 swapcol = function(diff) data.frame(x = diff$y, y = diff$x,  d = diff$d)
 
