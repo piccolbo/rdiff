@@ -29,18 +29,22 @@ swapcol = function(diff) data.frame(x = diff$y, y = diff$x,  d = diff$d)
 
 headl =
   function(x) {
-    x = as.list(x)[1]
-    nx = names(x)
-    if(is.null(nx) || is.na(nx) || nx == "")
-      x[[1]]
-    else
-      call("=", nx, x[[1]])}
+    if(is.null(x)) x
+    else {
+      x = as.list(x)[1]
+      nx = names(x)
+      if(is.null(nx) || is.na(nx) || nx == "")
+        x[[1]]
+      else
+        call("=", nx, x[[1]])}}
 
 taill =
   function(x) {
-    y = as.list(x)[-1]
-    if(length(y) > 0)
-      y}
+    if(is.null(x)) x
+    else {
+      y = as.list(x)[-1]
+      if(length(y) > 0)
+        y}}
 
 diffdist = function(x) sum(x$d)
 
@@ -58,9 +62,11 @@ rdiffi =
   memoise(
     function(x, y, verbose) {
       rdiffv = partial(rdiffi, verbose = verbose)
+      if(class(x) == "srcref") x = NULL
+      if(class(y) == "srcref") y = NULL
       z = {
-        if(is.null(x) || is.null(y) || (is.simple(x) && is.simple(y)))
-           Diff(x, y)
+        if(is.simple(x) && is.simple(y))
+          Diff(x, y)
         else {
           mindiff(
             c(
